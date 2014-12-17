@@ -63,6 +63,15 @@ void processdir(DIR * dirp, const char * curpath, FILE * outfile, const char * p
             b = (hash >>  8) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (hash >> 16) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (hash >> 24) & 0xff; fwrite(&b, 1, 1, outfile);
+			/* Add meta data for the file name(filename_length + filename)
+			 * 1 for the length of file name, other bytes are for the filename
+			 * Note the maximum length of file name is 255 because 
+			 * only one byte is used to store the length
+			 * */
+			size = strlen(ent->d_name);
+			b = (size >> 0) & 0xff; fwrite(&b, 1, 1, outfile);
+			fwrite(ent->d_name, size, 1, outfile);
+
             fseek(infile, 0, SEEK_END);
             size = ftell(infile);
             fseek(infile, 0, SEEK_SET);

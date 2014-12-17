@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-
+extern int testLogfile;
 /*
  *Reference: http://albert-oma.blogspot.tw/2012/04/semihosting.html
  */

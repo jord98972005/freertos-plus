@@ -9,8 +9,8 @@
 #include "task.h"
 #include "host.h"
 
+#include "testFunction.h"
 #include "bufbomb.h"
-
 typedef struct {
 	const char *name;
 	cmdfunc *fptr;
@@ -64,7 +64,9 @@ int parse_command(char *str, char *argv[]){
 }
 
 void ls_command(int n, char *argv[]){
-
+	if (fs_show_files()) {
+		fio_printf(2, "\r\n No file system\r\n");
+	}
 }
 
 int filedump(const char *filename){
@@ -81,6 +83,7 @@ int filedump(const char *filename){
 	while((count=fio_read(fd, buf, sizeof(buf)))>0){
 		fio_write(1, buf, count);
 	}
+	fio_printf(1, "\r");
 
 	fio_close(fd);
 	return 1;
@@ -145,26 +148,34 @@ void help_command(int n,char *argv[]){
 }
 
 void test_command(int n, char *argv[]) {
-    int handle;
-    int error;
+    
+    if (strcmp(argv[1],"fib") == 0){
+ 	if (n >= 3 ){
+ 		int count = 0,i = 0;
+ 		int c = 1;
+ 		for (i = strlen(argv[2]) -1; i >-1 ; i--){
+ 			count += (int)(argv[2][i] - 48)*c;
+ 			c = c *10;
+ 		}
+ 		int result = (int)fib_test(count-1); //input value -1 because fib_test defined
+		fio_printf(1,"\r\nThe %dth number of fib is %d\r\n",count,result);
 
-    fio_printf(1, "\r\n");
+ 		if (n == 4 && strcmp(argv[3],"log") == 0){
+ 			char message[128] = "System test log:fib\tThe ";
+ 			char *resultS = intToCharArray(result);
+ 			strcat(message,argv[2]);
+ 			strcat(message,"th number of fib is ");
+ 			strcat(message,resultS);
+ 			strcat(message,"\n");
+ 			systemTestLogger(message);
+ 		}
 
-    handle = host_action(SYS_OPEN, "output/syslog", 8);
-    if(handle == -1) {
-        fio_printf(1, "Open file error!\n\r");
-        return;
-    }
+	}
+           else{
+ 		fio_printf(1,"\r\n--test command, fib usage: test fib  [ n  ] log'\r\n");
+ 	}
+     }
 
-    char *buffer = "Test host_write function which can write data to output/syslog\n";
-    error = host_action(SYS_WRITE, handle, (void *)buffer, strlen(buffer));
-    if(error != 0) {
-        fio_printf(1, "Write file error! Remain %d bytes didn't write in the file.\n\r", error);
-        host_action(SYS_CLOSE, handle);
-        return;
-    }
-
-    host_action(SYS_CLOSE, handle);
 }
 
 void bufbomb_command(int n, char *argv[]) {
